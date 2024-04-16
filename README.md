@@ -1,2 +1,7 @@
-# EventsWebApp
-Web application to register participants for events
+# Events Web App
+
+## Run application
+
+```
+docker-compose -f docker-compose.yml up --build
+```
