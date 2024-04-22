@@ -1,11 +1,20 @@
+version: '3.8'
+
 services: 
   app: 
     build: .
     container_name: events-app
     volumes:
       - ./:/web_app
+      - ./web_app/db:/app/web_app/db
     ports: 
       - 5000:5000
     environment: 
       - FLASK_ENV=developement
+      - FLASK_APP=run.py
     command: python3 -u run.py
+  # test:
+  #   build: .
+  #   volumes:
+  #     - ./:/web_app
+  #   command: pytest

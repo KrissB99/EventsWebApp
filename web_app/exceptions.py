@@ -17,3 +17,8 @@ def custom_500():
 @app.errorhandler(500)
 def internal_server_error(_):
     return redirect(url_for('custom_500'))
+
+# Error
+
+class AuthorizationError(Exception):
+    """Raised when a user attempts an admin-restricted task"""
