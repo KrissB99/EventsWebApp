@@ -3,7 +3,7 @@ from flask import session, redirect, url_for
 import os 
 import hashlib
 
-from exceptions import AuthorizationError
+from .exceptions import AuthorizationError
 
 def hash_password(password: str) -> tuple[str]:
     salt = os.urandom(32)
@@ -38,5 +38,4 @@ def is_admin(func):
         else:
            raise AuthorizationError(f"User must be an admin to use {func.__name__}.")
        
-    
     return wrapper

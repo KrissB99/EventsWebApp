@@ -7,37 +7,33 @@ from web_app.const_vars import PEPPER
 from web_app.main import db
 
 class DBManager:
-    """CRUD class"""
-    
-    session = db.session
-    
     @classmethod
     def get_all(cls) -> list[db.Model]:
         return cls.query.all()
-    
+
     @classmethod
     def get_by_id(cls, id: int) -> db.Model:
-        return cls.query.filter(cls.id == id).first()
-    
+        return cls.query.get(id)
+
     def add(self) -> db.Model:
-        session.add(self)
-        session.commit()
+        db.session.add(self)
+        db.session.commit()
         return self
-    
+
     @classmethod
     def add_all(cls, db_objects: list[db.Model]) -> None:
-        session.add_all(db_objects)
-        session.commit()
-        
+        db.session.add_all(db_objects)
+        db.session.commit()
+
     def update(self, attr: dict) -> None:
         for name, value in attr.items():
             setattr(self, name, value)
-        session.commit()
-        
+        db.session.commit()
+
     def delete(self) -> None:
-        session.delete(self)
-        session.commit()
-        
+        db.session.delete(self)
+        db.session.commit()
+
     def get_attrs(self):
         return ', '.join(f'{key}: {getattr(self, key)!r}' for key in self.__table__.columns.keys())
 
@@ -59,7 +55,7 @@ class Users(db.Model, DBManager):
     events: object  = relationship(
         'UsersOnEvents', back_populates='user',  cascade="all, delete-orphan"
     )
-    hosted_events = relationship('Events', back_populates='author_id') 
+    hosted_events = relationship('Events', back_populates='author') 
     
     @classmethod
     def exists(cls, email: str) -> bool:
@@ -93,7 +89,7 @@ class Events(db.Model, DBManager):
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     
     # Relationships
-    author: Mapped['User'] = relationship('Users', back_populates='events')
+    author: Mapped['User'] = relationship('Users', back_populates='hosted_events')
     attendee_list: Mapped[list] =  relationship(
         'UsersOnEvents', back_populates='event',  cascade="all, delete-orphan"
     )

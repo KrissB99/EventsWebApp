@@ -1,24 +1,10 @@
-<!DOCTYPE html>
-<html class="h-full" lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="/static/js/tailwind.config.js">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
-	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-	<!-- Favicon -->
-	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}?version=1.0">
-    <!-- Sweet Alert 2 -->
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>{{ title }}</title>
-</head>
-<body class="h-full bg-white">
+{% extends 'main/base.html' %}
+{% block content %}
 
-    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-      <p>MAIN DASHBOARD</p>
-    </div>
+<div class="flex min-h-[88vh] flex-col justify-center px-6 py-12 lg:px-8">
 
-</body>
-</html>
+    <h1>Main dahboard</h1>
+
+</div>
+
+{% endblock content %}
