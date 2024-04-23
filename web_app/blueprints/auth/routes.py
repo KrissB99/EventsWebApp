@@ -26,12 +26,12 @@ def add_user_to_db():
 
 @auth.route('/sign-in/check-user', methods=['POST'])
 def authorize_user():
-    form = request.form
+    form = request.json
     
     # If user not in db
     if user := Users.exists(form['email']):
         # If passwords match
-        if check_password(form['password'], user.password_hashed, user.salt):
+        if check_password(form['password'], user.password_hash, user.salt):
     
             # Save user data in session
             session['user_id'] = user.id
@@ -45,7 +45,7 @@ def authorize_user():
 @auth.route('/logout')
 def logout():
     
-    # Save user data in session
+    # Clean session
     session['user_id'] = None
     session['email'] = None
     session['admin'] = None
