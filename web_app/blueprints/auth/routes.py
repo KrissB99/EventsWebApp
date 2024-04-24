@@ -1,15 +1,48 @@
 from . import auth
-from flask import request, session, redirect, url_for
+from flask import request, session, redirect, url_for,jsonify
 
 from web_app.db.models import Users
-from web_app.helpers import hash_password, check_password
+from web_app.helpers import hash_password, check_password, clear_session
+
+# CRUD FOR USER
+
+@auth.route('/users')
+def get_users():
+    return jsonify([user.to_dict() for user in Users.get_all()])
+
+@auth.route('/user/<int:id>')
+def get_user(id: int):
+    if user := Users.get_by_id(id): # Get object user
+        return jsonify(user.to_dict()) # Send user as json
+    return {'detail': 'Such a user does not exist.'}, 404
+
+@auth.route('/user/<int:id>', methods=['PATCH'])
+def update_user(id: int):
+    data_to_update = request.json # Get data from fetch
+    if user := Users.get_by_id(id): # Get object user
+        user.update(data_to_update) # Update user
+        # Update user data in session
+        session['user_id'] = user.id
+        session['email'] = user.email
+        session['admin'] = user.is_admin
+        return {'detail': 'User updated succesfully.'}
+    return {'detail': 'Such a user does not exist.'}, 404
+
+@auth.route('/user/<int:id>', methods=['DELETE'])
+def remove_user(id: int):
+    if user := Users.get_by_id(id): # Get object user
+        user.delete() # Remove user
+        clear_session() # Clean session
+        return {'detail': 'User removed succesfully.'}
+    return {'detail': 'Such a user does not exist.'}, 404
+
+# Sign in, sign up and logout
     
 @auth.route('/add-user-to-db', methods=['POST'])
 def add_user_to_db():
-    form = request.json
-    
-    # If user with this email exists
-    if Users.exists(form['email']):
+    form = request.json # Get data from fetch
+
+    if Users.exists(form['email']): # If user with this email exists
         return {'detail': 'User already registered, please use different email.'}, 400
     
     # Generate salt, hash password and create user
@@ -26,10 +59,9 @@ def add_user_to_db():
 
 @auth.route('/sign-in/check-user', methods=['POST'])
 def authorize_user():
-    form = request.json
+    form = request.json # Get data from fetch
     
-    # If user not in db
-    if user := Users.exists(form['email']):
+    if user := Users.exists(form['email']): # If user not in db
         # If passwords match
         if check_password(form['password'], user.password_hash, user.salt):
     
@@ -44,10 +76,5 @@ def authorize_user():
 
 @auth.route('/logout')
 def logout():
-    
-    # Clean session
-    session['user_id'] = None
-    session['email'] = None
-    session['admin'] = None
-    
+    clear_session() # Clean session
     return redirect(url_for('auth.sign_in'))

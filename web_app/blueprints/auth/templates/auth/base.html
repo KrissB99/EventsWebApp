@@ -18,7 +18,7 @@
 </head>
 <body class="h-full bg-white overflow-hidden">
 
-    <nav class="bg-indigo-200 border-indigo-400 shadow-md dark:bg-gray-900" x-data="baseData">
+    <nav class="bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md dark:bg-gray-900" x-data="baseData">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
           <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
               <img src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" class="h-8" alt="Evently logo" />
@@ -34,13 +34,13 @@
             <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
                 <li>
                     <a href="/auth/sign-in" class="block py-2 px-3 rounded md:p-0 dark:text-white md:dark:text-blue-500"
-                        :class="currPath == '/auth/log-in' ? 'text-white md:bg-transparent md:text-blue-700' : 'text-gray-900 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent'">
+                        :class="currPath == '/auth/sign-in' ? 'text-white/80 md:bg-transparent' : 'text-gray-900 md:hover:bg-transparent md:border-0 md:hover:text-white/80 md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent'">
                         Sign In
                     </a>
                 </li>
                 <li>
                     <a href="/auth/sign-up" class="block py-2 px-3 rounded md:p-0 dark:text-white md:dark:text-blue-500"
-                        :class="currPath == '/auth/sign-up' ? 'text-white md:bg-transparent md:text-blue-700' : 'text-gray-900 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent'">
+                        :class="currPath == '/auth/sign-up' ? 'text-white/80 md:bg-transparent' : 'text-gray-900 md:hover:bg-transparent md:border-0 md:hover:text-white/80 md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent'">
                         Sign Up
                     </a>
                 </li>
@@ -54,7 +54,7 @@
 
 	{% endblock content %}
 
-    <footer class="bg-indigo-200 rounded-lg shadow dark:bg-gray-800">
+    <footer class="bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md dark:bg-gray-800">
         <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
         <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2024 <b>Krysia Banaszewska</b>. All Rights Reserved.
         </span>

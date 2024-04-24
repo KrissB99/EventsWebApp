@@ -1,4 +1,4 @@
-# Events Web App
+# Events Web App by Krysia Banaszewska
 
 ## Run application
 

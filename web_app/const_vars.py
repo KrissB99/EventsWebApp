@@ -1,7 +1,1 @@
-from enum import Enum
-
-PEPPER = 'hfhhsiryf'
-
-class UserType(Enum):
-    User = 0
-    Admin = 1
+MAIN_URL = 'http://127.0.0.1:5000/'

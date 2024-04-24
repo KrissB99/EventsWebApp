@@ -2,24 +2,30 @@ import datetime
 from flask import session
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
 
-from web_app.const_vars import PEPPER
 from web_app.main import db
 
 class DBManager:
+    
     @classmethod
     def get_all(cls) -> list[db.Model]:
         return cls.query.all()
 
     @classmethod
     def get_by_id(cls, id: int) -> db.Model:
-        return cls.query.get(id)
+        return cls.query.filter(cls.id == id).first()
 
     def add(self) -> db.Model:
-        db.session.add(self)
-        db.session.commit()
-        return self
-
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return self
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            raise e
+        
     @classmethod
     def add_all(cls, db_objects: list[db.Model]) -> None:
         db.session.add_all(db_objects)
@@ -52,10 +58,18 @@ class Users(db.Model, DBManager):
     salt: Mapped[str] = mapped_column(String(20), nullable=False)
     
     # Relationships
-    events: object  = relationship(
-        'UsersOnEvents', back_populates='user',  cascade="all, delete-orphan"
+    events  = relationship(
+        'UsersOnEvents', 
+        back_populates='user',  
+        cascade="all, delete-orphan",
+        lazy="subquery",
     )
-    hosted_events = relationship('Events', back_populates='author') 
+    hosted_events = relationship(
+        'Events', 
+        back_populates='author',
+        cascade="all, delete-orphan",
+        lazy="subquery",
+    ) 
     
     @classmethod
     def exists(cls, email: str) -> bool:
@@ -67,8 +81,7 @@ class Users(db.Model, DBManager):
             'admin': self.is_admin, 
             'email': self.email, 
             'is_vege': self.is_vege,
-            'evets': [event.to_dict() for event in self.events],
-            'hosted_events': [event.to_dict() for event in self.hosted_events]
+            'events': [event.to_dict() for event in self.events]
         }
     
     def __repr__(self):
@@ -82,21 +95,32 @@ class Events(db.Model, DBManager):
     
     # Columns
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    date_from: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
-    date_to: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    date_from: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    date_to: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     
     # Foreign Keys
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     
     # Relationships
     author: Mapped['User'] = relationship('Users', back_populates='hosted_events')
-    attendee_list: Mapped[list] =  relationship(
-        'UsersOnEvents', back_populates='event',  cascade="all, delete-orphan"
+    attendee_list: Mapped[list['Users']] =  relationship(
+        'UsersOnEvents', 
+        overlaps="event",
+        lazy='subquery'
     )
+    
+    @classmethod
+    def create(cls, form: dict) -> object:
+        for date in ['date_from', 'date_to']:
+            form[date] = datetime.strptime(form[date], "%Y-%m-%d")
+        event = cls(**form).add()
+        return event
     
     def to_dict(self) -> dict:
         return {
             'id': self.id, 
+            'name': self.name,
             'date_from': self.date_from, 
             'date_to': self.date_to, 
             'author': self.author.to_dict() if self.author else None, 
@@ -125,8 +149,12 @@ class UsersOnEvents(db.Model, DBManager):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey('events.id'))
     
     # Relations
-    user: Mapped['Users'] = relationship('Users', back_populates='events')
-    event: Mapped['Events'] = relationship('Events', back_populates='attendee_list')
+    user: Mapped['Users'] = relationship('Users', lazy="subquery")
+    event: Mapped['Events'] = relationship(
+        'Events', 
+        overlaps="attendee_list", 
+        lazy="subquery"
+    )
     
     def to_dict(self) -> dict: 
         return {
