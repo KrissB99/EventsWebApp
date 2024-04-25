@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% block content %}
 
-<div class="flex min-h-[88vh] flex-col justify-top px-6 py-12 lg:px-8" x-data="dashboardData">
+<div class="flex min-h-[88vh] flex-col justify-top px-6 py-12 lg:px-8 overflow-auto" x-data="dashboardData">
 
     <template x-if="!loaded">
         <div class="flex items-center justify-center">
@@ -11,24 +11,27 @@
 
     <template x-if="loaded">
         <div>
-            <template x-if="events.length === 0">
-                <div class="w-75 mx-auto text-center">
-        
-                    <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Welcome to your dashboard!</h1>
-                    <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">Your events will appear here. Create a new event or sign up for an existing one by clicking the corresponding button below.</p>
-                    <button @click="showAddEventModal = true" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
-                        Create your first event
-                        <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                    </svg>
-                    </button>
-                
+            <template x-if="events.author.length === 0 && events.user.length === 0 && events.new.length === 0">
+                <div class="flex min-h-[88vh] flex-col justify-center px-6 py-12 lg:px-8">
+                    <div class="w-75 mx-auto text-center">
+                        
+                        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Welcome to your dashboard!</h1>
+                        <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">Your events will appear here. Create a new event or sign up for an existing one by clicking the corresponding button below.</p>
+                        <button @click="showAddEventModal = true" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+                            Create your first event
+                            <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                            </svg>
+                        </button>
+                    
+                    </div>
                 </div>
             </template>
     
-            <template x-if="events != []">
+            <template x-if="events.author.length > 0 || events.user.length > 0 || events.new.length > 0">
                 <div>
 
+                    <!-- Your Events - author -->
                     <h1 class="text-2xl font-bold pb-4">Events you organize</h1>
                     <hr class="pb-4">
                     <div class="flex flex-row flex-wrap align-top grid-cols-4 gap-4">
@@ -39,70 +42,115 @@
                             
                             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Add new event</h5>
                         </button>
-                        <template x-for="event in events.new">
+                        <template x-for="event in events.author">
                             <div class="max-w-sm p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 min-w-[20%] text-center">
-                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="event.name"></h5>
-                                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="event.name "></h5>
+                                <p class="font-normal text-gray-700 dark:text-gray-400">
                                     <small class="font-bold">Author: </small>
                                     <small x-text="event.author.email"></small>
                                 </p>
-                                <a href="#" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    Click to sign up
+                                <p class="font-normal text-gray-700 dark:text-gray-400">
+                                    <small class="font-bold">Start: </small>
+                                    <small x-text="displayDate(event.date_from)"></small>
+
+                                    <small class="font-bold ml-2">End: </small>
+                                    <small x-text="displayDate(event.date_to)"></small>
+                                </p>
+                                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                    <small class="font-bold">Participants: </small>
+                                    <small x-text="event.atendee_list.length"></small>
+                                </p>
+                                <button @click="openEditEventModal(event)" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-yellow-700 rounded-lg hover:bg-yellow-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800">
+                                    Edit event
                                     <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
                                     </svg>
-                                </a>
+                                </button>
                             </div>
                         </template>         
                     </div>
 
-                    <h1 class="text-2xl font-bold py-4">Events you sign-up for</h1>
-                    <hr class="pb-4">
-                    <div class="flex flex-row flex-wrap align-top grid-cols-4 gap-4">
-                        <template x-for="event in events.atendee">
-                            <div class="max-w-sm p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 min-w-[20%] text-center">
-                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="event.name"></h5>
-                                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    <small class="font-bold">Author: </small>
-                                    <small x-text="event.author.email"></small>
-                                </p>
-                                <a href="#" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    Click to sign up
-                                    <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                                    </svg>
-                                </a>
-                            </div>
-                        </template>         
+                    <!-- Your events - user -->
+                    <div x-show="events.user.length > 0">
+                        <h1 class="text-2xl font-bold py-4">Events you sign-up for</h1>
+                        <hr class="pb-4">
+                        <div class="flex flex-row flex-wrap align-top grid-cols-4 gap-4">
+                            <template x-for="event in events.user">
+                                <div class="max-w-sm p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 min-w-[20%] text-center">
+                                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="event.name"></h5>
+                                    <p class="font-normal text-gray-700 dark:text-gray-400">
+                                        <small class="font-bold">Author: </small>
+                                        <small x-text="event.author.email"></small>
+                                    </p>
+                                    <p class="font-normal text-gray-700 dark:text-gray-400">
+                                        <small class="font-bold">Start: </small>
+                                        <small x-text="displayDate(event.date_from)"></small>
+    
+                                        <small class="font-bold ml-2">End: </small>
+                                        <small x-text="displayDate(event.date_to)"></small>
+                                    </p>
+                                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                        <small class="font-bold">Participants: </small>
+                                        <small x-text="event.atendee_list.length"></small>
+                                    </p>
+                                    <button @click="resignFromEvent(event.id)" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
+                                        Click to resign
+                                        <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </template>         
+                        </div>
                     </div>
 
-                    <h1 class="text-2xl font-bold py-4">Sign-up for event</h1>
-                    <hr class="pb-4">
-                    <div class="flex flex-row flex-wrap align-top grid-cols-4 gap-4">
-                        <template x-for="event in events.frees">
-                            <div class="max-w-sm p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 min-w-[20%] text-center">
-                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="event.name"></h5>
-                                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    <small class="font-bold">Author: </small>
-                                    <small x-text="event.author.email"></small>
-                                </p>
-                                <a href="#" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    Click to sign up
-                                    <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                                    </svg>
-                                </a>
-                            </div>
-                        </template>         
+                    <!-- Events to sign up -->
+                    <div x-show="events.new.length > 0">
+                        <h1 class="text-2xl font-bold py-4">Sign-up for event</h1>
+                        <hr class="pb-4">
+                        <div class="flex flex-row flex-wrap align-top grid-cols-4 gap-4">
+                            <template x-for="event in events.new">
+                                <div class="max-w-sm p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 min-w-[20%] text-center">
+                                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="event.name"></h5>
+                                    <p class="font-normal text-gray-700 dark:text-gray-400">
+                                        <small class="font-bold">Author: </small>
+                                        <small x-text="event.author.email"></small>
+                                    </p>
+                                    <p class="font-normal text-gray-700 dark:text-gray-400">
+                                        <small class="font-bold">Start: </small>
+                                        <small x-text="displayDate(event.date_from)"></small>
+    
+                                        <small class="font-bold ml-2">End: </small>
+                                        <small x-text="displayDate(event.date_to)"></small>
+                                    </p>
+                                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                        <small class="font-bold">Participants: </small>
+                                        <small x-text="event.atendee_list.length"></small>
+                                    </p>
+                                    <button @click="signUpForEvent(event)" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                        Click to sign up
+                                        <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </template>         
+                        </div>
+                                 
                     </div>
-                                           
+                                 
                 </div>       
             </template>
+            <div>
+                {% from 'jinja/modals.jinja' import addEventModal, signUpForEventModal, editEventModal %}
+                {{ addEventModal() }}
+                {{ signUpForEventModal() }}
+                
+            </div>
+            {{ editEventModal() }}
+            
         </div>
     </template>
-
-    {% from 'components/modals.jinja' import addEventModal %}
-    {{ addEventModal() }}
 
 </div>
 
@@ -112,10 +160,15 @@
         Alpine.data('dashboardData', () => ({
 
             userId: `{{ session['user_id'] }}`,
-            events: {},
+            currEvent: {name: 'New event'},
+            events: {author: {}, new: {}, user: {}},
             request: {},
+            signUpRequest: {},
+            editEventRequest: {},
             loaded: true,
             showAddEventModal: false, 
+            showSignUpForEventModal: false,
+            showEditEventModal: false,
 
             init() {
                 this.$nextTick(async () => { 
@@ -124,12 +177,15 @@
                 })
                 this.$watch('loaded', () => { this.clearRequest() })
              },
+
+            // Events - get
+
             async getEvents() {
                 const resp = await fetch('/events/all')
                 const data = await resp.json()
-                this.events.author = data.filter(event => event.author_id == this.userId)
-                this.events.atendee = data.filter(event => event.atendee_list.map(ev => ev.user_id == this.userId))
-                this.events.new = data.filter(event => event.atendee_list.map(ev => ev.user_id != this.userId))
+                this.events.author = data.filter(event => event.author.id === parseInt(this.userId) )
+                this.events.user = data.filter(event => event.atendee_list.length > 0 && event.atendee_list.some(ev => ev.user.id === parseInt(this.userId)) )
+                this.events.new = data.filter(event => !event.atendee_list.some(ev => ev.user.id === parseInt(this.userId)) )
             },
             async createEvent() {
                 const resp = await fetch('/events/new', {
@@ -138,6 +194,22 @@
                     body: JSON.stringify(this.request)
                 })
                 const data = await resp.json()
+                if (resp.ok) {
+                    this.getEvents()
+                }
+                showAlert(resp, data)
+            },
+            async updateEvent() {
+                const resp = await fetch(`/events/${this.currEvent.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.editEventRequest)
+                })
+                const data = await resp.json()
+                if (resp.ok) { 
+                    this.getEvents() 
+                    this.showEditEventModal = false
+                }
                 showAlert(resp, data)
             },
             async deleteEvent() {
@@ -165,12 +237,52 @@
                     }
                 });
             },
+
+            // Attendance
+
+            async resignFromEvent(eventId) {
+                const resp = await fetch(`/events/resign/${eventId}`, { method: 'DELETE' })
+                const data = await resp.json()
+                if (resp.ok) { await this.getEvents() }
+                showAlert(resp, data)
+            },
+            async createRelationshipUserEvent() {
+                // Date validation - to do
+                const resp = await fetch(`/events/sign-up/${this.currEvent.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.signUpRequest)
+                })
+                const data = await resp.json()
+                if (resp.ok) { this.getEvents() }
+                showAlert(resp, data)
+            },
+            
+            // Other
+            signUpForEvent(event) {
+                this.currEvent = event
+                this.signUpRequest.date_from = new Date(event.date_from).toISOString().substring(0, 10);
+                this.signUpRequest.date_to = new Date(event.date_to).toISOString().substring(0, 10);
+                this.showSignUpForEventModal = true
+            },
+            openEditEventModal(event) {
+                this.currEvent = event
+                this.editEventRequest.name = event.name
+                this.editEventRequest.date_from = new Date(event.date_from).toISOString().substring(0, 10);
+                this.editEventRequest.date_to = new Date(event.date_to).toISOString().substring(0, 10);
+                this.showEditEventModal = true
+            },
             clearRequest() {
                 this.request = {name: null, date_from: null, date_to: null, author_id: this.userId}
             },
             closeAddEventModal() {
                 this.showAddEventModal = false
                 this.clearRequest()
+            },
+            displayDate(dateTimeString) {
+                const date = new Date(dateTimeString);
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('en-GB', options);
             },
 
         }))

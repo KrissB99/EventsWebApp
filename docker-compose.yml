@@ -13,8 +13,8 @@ services:
       - FLASK_ENV=developement
       - FLASK_APP=run.py
     command: python3 -u run.py
-  # test:
-  #   build: .
-  #   volumes:
-  #     - ./:/web_app
-  #   command: pytest
+  test:
+    build: .
+    volumes:
+      - ./:/web_app
+    command: pytest

@@ -39,6 +39,13 @@ class DBManager:
     def delete(self) -> None:
         db.session.delete(self)
         db.session.commit()
+    
+    @classmethod
+    def create(cls, form: dict) -> object:
+        for date in ['date_from', 'date_to']:
+            form[date] = datetime.strptime(form[date], "%Y-%m-%d")
+        event = cls(**form).add()
+        return event
 
     def get_attrs(self):
         return ', '.join(f'{key}: {getattr(self, key)!r}' for key in self.__table__.columns.keys())
@@ -78,10 +85,9 @@ class Users(db.Model, DBManager):
     def to_dict(self):
         return {
             'id': self.id, 
-            'admin': self.is_admin, 
+            'is_admin': self.is_admin, 
             'email': self.email, 
             'is_vege': self.is_vege,
-            'events': [event.to_dict() for event in self.events]
         }
     
     def __repr__(self):
@@ -103,19 +109,15 @@ class Events(db.Model, DBManager):
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     
     # Relationships
-    author: Mapped['User'] = relationship('Users', back_populates='hosted_events')
+    author: Mapped['User'] = relationship(
+        'Users', 
+        foreign_keys='Events.author_id',
+        lazy="subquery"
+    )
     attendee_list: Mapped[list['Users']] =  relationship(
         'UsersOnEvents', 
-        overlaps="event",
         lazy='subquery'
     )
-    
-    @classmethod
-    def create(cls, form: dict) -> object:
-        for date in ['date_from', 'date_to']:
-            form[date] = datetime.strptime(form[date], "%Y-%m-%d")
-        event = cls(**form).add()
-        return event
     
     def to_dict(self) -> dict:
         return {
@@ -124,7 +126,7 @@ class Events(db.Model, DBManager):
             'date_from': self.date_from, 
             'date_to': self.date_to, 
             'author': self.author.to_dict() if self.author else None, 
-            'atendee_list': [user.to_dict() for user in self.attendee_list]
+            'atendee_list': [element.to_dict() for element in self.attendee_list]
         }
     
     def __repr__(self):
@@ -150,25 +152,47 @@ class UsersOnEvents(db.Model, DBManager):
     
     # Relations
     user: Mapped['Users'] = relationship('Users', lazy="subquery")
-    event: Mapped['Events'] = relationship(
-        'Events', 
-        overlaps="attendee_list", 
-        lazy="subquery"
-    )
     
     def to_dict(self) -> dict: 
         return {
             'id': self.id, 
             'date_from': self.date_from, 
             'date_to': self.date_to,
-            'meals': {
-                'breakfast': self.breakfast, 
-                'lunch': self.lunch, 
-                'dinner': self.dinner
-            }, 
+            'breakfast': self.breakfast, 
+            'lunch': self.lunch, 
+            'dinner': self.dinner,
             'user': self.user.to_dict() if self.user else None, 
-            'event': self.event.to_dict() if self.event else None
         }
         
     def __repr__(self) -> str:
         return f'UsersOnEvents({self.get_attrs()})'
+    
+    
+class Logs(db.Model, DBManager):
+    
+    __tablename__ = 'logs'
+    __allow_unmapped__ = True
+    
+    # Columns
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    endpoint: Mapped[str] = mapped_column(String, nullable=True)
+    status_code: Mapped[int] = mapped_column(Integer, nullable=False)
+    time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    
+    @classmethod
+    def new(cls, endpoint: str, status_code: int) -> None:
+        cls(user_id=session['user_id'], 
+            endpoint=endpoint, 
+            status_code=status_code).add()
+    
+    def to_dict(self) -> dict: 
+        return {
+            'id': self.id, 
+            'user_id': self.user_id,
+            'action': self.action,
+            'time': self.datetime
+        }
+        
+    def __repr__(self) -> str:
+        return f'Logs({self.get_attrs()})'
