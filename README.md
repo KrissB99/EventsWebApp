@@ -19,4 +19,4 @@ Additional info:
 
 - Test doesn't work due to lack of time
 
-- ![image](https://github.com/KrissB99/EventsWebApp/assets/77814273/de9c2fbb-ae04-49b7-b76e-94807210b866)
+![image](https://github.com/KrissB99/EventsWebApp/assets/77814273/de9c2fbb-ae04-49b7-b76e-94807210b866)
