@@ -175,14 +175,14 @@ class Logs(db.Model, DBManager):
     
     # Columns
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    user_id: Mapped[int] = mapped_column(Integer, nullable=True)
     endpoint: Mapped[str] = mapped_column(String, nullable=True)
     status_code: Mapped[int] = mapped_column(Integer, nullable=False)
     time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     
     @classmethod
     def new(cls, endpoint: str, status_code: int) -> None:
-        cls(user_id=session['user_id'], 
+        cls(user_id=session['user_id'] if session else None, 
             endpoint=endpoint, 
             status_code=status_code).add()
     

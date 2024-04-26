@@ -1,8 +1,13 @@
-from flask import render_template
+from flask import render_template, request
 
 from . import admin
 from ...helpers import is_admin, session_exists
+from ...db.models import Logs
 
+@admin.after_request
+def log_status_code(response):
+    Logs.new(request.path, response.status_code)
+    return response
 
 @admin.route('/')
 @admin.route('/dashboard')

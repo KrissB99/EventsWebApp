@@ -4,16 +4,15 @@ from flask import request, session, redirect, url_for,jsonify
 from web_app.db.models import Users, Logs
 from web_app.helpers import hash_password, check_password, clear_session
 
-# CRUD FOR USER
-
 @auth.after_request
 def log_status_code(response):
     Logs.new(request.path, response.status_code)
     return response
 
+# CRUD FOR USER
+
 @auth.route('/users')
 def get_users():
-    print(request.endpoint)
     return jsonify([user.to_dict() for user in Users.get_all()])
 
 @auth.route('/user/<int:id>')
@@ -27,7 +26,6 @@ def update_user(id: int):
     data_to_update = request.json # Get data from fetch
     if user := Users.get_by_id(id): # Get object user
         user.update(data_to_update) # Update user
-        Logs.new(request.endpoint, status_code, )# Save log
         # Update user data in session
         session['user_id'] = user.id
         session['email'] = user.email

@@ -1,20 +1,39 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 import pytest
-from flask import session
 import os
-from web_app import app, db_test
 
-@pytest.fixture()
-def client():
-    app.config['TESTING'] = True  # Ensure the app is in testing mode
-    return app.test_client()
+def create_app():
 
-@pytest.fixture  
-def session():  
-    yield session  
-    session.close()  
+    app = Flask(__name__)
 
-@pytest.fixture()
-def db():
-    DATABASE_PATH = os.path.join(os.getcwd(), 'web_app', 'db', 'my_test_database.db')
-    if not DATABASE_PATH:
-        db_test.create_test_db()
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(basedir, 'db', 'my__test_database.db')
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+    app.config['SECRET_KEY'] = '7373sfedhrga734826r836872sfed'
+
+    return app
+
+
+@pytest.fixture(scope='module')
+def test_client():
+    # Configure the app with the test configuration
+    flask_app = create_app()
+
+    # Create a test client using the Flask application configured for testing
+    testing_client = flask_app.test_client()
+
+    # Establish an application context before running the tests
+    ctx = flask_app.app_context()
+    ctx.push()
+    
+    db = SQLAlchemy()
+
+    db.create_all()  # Create all database tables
+
+    yield testing_client  # this is where the testing happens
+
+    db.session.remove()
+    db.drop_all()
+    ctx.pop()
