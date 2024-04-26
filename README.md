@@ -18,3 +18,5 @@ Additional info:
 (you find settings at the navbar by clicking on user icon on the right hand side)
 
 - Test doesn't work due to lack of time
+
+- ![image](https://github.com/KrissB99/EventsWebApp/assets/77814273/de9c2fbb-ae04-49b7-b76e-94807210b866)
